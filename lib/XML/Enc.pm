@@ -14,7 +14,7 @@ use Crypt::Random qw( makerandom_octet );
 
 use vars qw($VERSION @EXPORT_OK %EXPORT_TAGS $DEBUG);
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 
 our $DEBUG = 0;
 
@@ -87,23 +87,15 @@ Specify the data encryption method to be used.  Supported methods are:
 
 Used in encryption.  Optional.  Default method: aes256-cbc
 
-=item B<force_element_to_content>
-
-Used for decryption to treat an Element EncryptedData type as Content
-if the decrypted data is not XML.  xmlsec appears to have a bug where it
-uses the Element EncryptedData type in order to encrypt what is actually Content.
-Strangely it appears to have no issue decrypting the data if the Type is changed
-to Content
-
 =over
 
-=item * L<tripledes-cbc>
+=item * L<tripledes-cbc|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#tripledes-cbc>
 
-=item * L<aes128-cbc>
+=item * L<aes128-cbc|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#aes128-cbc>
 
-=item * L<aes196-cbc>
+=item * L<aes196-cbc|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#aes192-cbc>
 
-=item * L<aes256-cbc>
+=item * L<aes256-cbc|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#aes256-cbc>
 
 =back
 
@@ -115,11 +107,19 @@ Used in encryption.  Optional.  Default method: rsa-1_5
 
 =over
 
-=item * L<rsa-1_5>
+=item * L<rsa-1_5|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#rsa-1_5>
 
-=item * L<rsa-oaep-mgf1p>
+=item * L<rsa-oaep-mgf1p|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#rsa-oaep-mgf1p>
 
 =back
+
+=item B<force_element_to_content>
+
+Used for decryption to treat an Element EncryptedData type as Content
+if the decrypted data is not XML.  xmlsec appears to have a bug where it
+uses the Element EncryptedData type in order to encrypt what is actually Content.
+Strangely it appears to have no issue decrypting the data if the Type is changed
+to Content
 
 =back
 
