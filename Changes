@@ -2,5 +2,7 @@ Revision history for Perl extension XML::Enc.
 
 {{$NEXT}}
 
+0.01 -- Sat Mar 26 11:53:16 ADT 2022
+
     [ First Release ]
     - 89e87ab Initial Version
