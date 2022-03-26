@@ -68,7 +68,7 @@ XML Security Library example: Original XML
 -->
 <EncryptedData
   xmlns="http://www.w3.org/2001/04/xmlenc#"
-  Type="http://www.w3.org/2001/04/xmlenc#Element">
+  Type="http://www.w3.org/2001/04/xmlenc#Content">
  <EncryptionMethod Algorithm=
    "http://www.w3.org/2001/04/xmlenc#$dm"/>
  <KeyInfo xmlns="http://www.w3.org/2000/09/xmldsig#">
@@ -124,7 +124,7 @@ SKIP: {
             print CONTENT $content_tmpl;
             close CONTENT;
 
-            $encrypt_response = `xmlsec1 encrypt --pubkey-cert-pem t/sign-certonly.pem   --session-key $sesskey{$dm} --xml-data plaintext.xml --output encrypted-content.xml --node-xpath '/PayInfo/CreditCard/Number/text()' content-template.xml 2>&1`;
+            $encrypt_response = `xmlsec1 encrypt --pubkey-cert-pem t/sign-certonly.pem   --session-key $sesskey{$dm} --xml-data plaintext.xml --output encrypted-content.xml --node-xpath '/PayInfo/CreditCard/Number' content-template.xml 2>&1`;
 
             $encrypted = read_text('encrypted-content.xml');
 
@@ -132,7 +132,6 @@ SKIP: {
             unlink 'content-template.xml';
             unlink 'encrypted-content.xml';
 
-            $decrypter->{force_element_to_content} = 1;
             # Decrypt using XML::Enc
             ok($decrypter->decrypt($encrypted) =~ /1076 2478 0678 5589/,
                     "Decrypted $dm $km xmlsec1 Content");

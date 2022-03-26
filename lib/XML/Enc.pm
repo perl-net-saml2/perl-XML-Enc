@@ -28,7 +28,6 @@ XML::Enc - XML Encryption
                                 {
                                     key                         => 't/sign-private.pem',
                                     no_xml_declaration          => 1,
-                                    force_element_to_content    => 0,
                                 },
                             );
     $decrypted = $enc->decrypt($xml);
@@ -113,14 +112,6 @@ Used in encryption.  Optional.  Default method: rsa-1_5
 
 =back
 
-=item B<force_element_to_content>
-
-Used for decryption to treat an Element EncryptedData type as Content
-if the decrypted data is not XML.  xmlsec appears to have a bug where it
-uses the Element EncryptedData type in order to encrypt what is actually Content.
-Strangely it appears to have no issue decrypting the data if the Type is changed
-to Content
-
 =back
 
 =cut
@@ -149,10 +140,6 @@ sub new {
 
     my $key_method = exists($params->{'key_transport'}) ? $params->{'key_transport'} : 'rsa-1_5';
     $self->{'key_transport'} = $self->_setKeyEncryptionMethod($key_method);
-
-    my $force_element_to_content = exists($params->{'force_element_to_content'}) ?
-                $params->{'force_element_to_content'} : 0;
-    $self->{'force_element_to_content'} = $force_element_to_content;
 
     return $self;
 }
@@ -215,15 +202,6 @@ sub decrypt {
             if (defined $newnode) {
                 $encryptednode->addSibling($newnode);
                 $encryptednode->unbindNode();
-                #print $newnode->serialize();
-            } else {
-                if ($self->{force_element_to_content}) {
-                    # Invalid XML simply add it to the node
-                    $data =~ s/[\/<>]//mg; # Remove any stray XML characters
-                    my $parent = $encryptednode->parentNode;
-                    $parent->removeChildNodes;
-                    $parent->appendText($data);
-                }
             }
         } else {
             # http://www.w3.org/2001/04/xmlenc#Content
