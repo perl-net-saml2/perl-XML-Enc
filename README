@@ -2,14 +2,13 @@ NAME
     XML::Enc - XML::Enc Encryption Support
 
 VERSION
-    version 0.02
+    version 0.03
 
 SYNOPSIS
         my $decrypter = XML::Enc->new(
                                     {
                                         key                         => 't/sign-private.pem',
                                         no_xml_declaration          => 1,
-                                        force_element_to_content    => 0,
                                     },
                                 );
         $decrypted = $enc->decrypt($xml);
@@ -79,13 +78,6 @@ METHODS
         *   rsa-oaep-mgf1p
             <https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.ht
             ml#rsa-oaep-mgf1p>
-
-    force_element_to_content
-        Used for decryption to treat an Element EncryptedData type as
-        Content if the decrypted data is not XML. xmlsec appears to have a
-        bug where it uses the Element EncryptedData type in order to encrypt
-        what is actually Content. Strangely it appears to have no issue
-        decrypting the data if the Type is changed to Content
 
   decrypt( ... )
     Main decryption function.
