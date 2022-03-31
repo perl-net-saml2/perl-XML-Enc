@@ -120,9 +120,15 @@ Used in encryption.  Optional.  Default method: aes256-cbc
 
 =item * L<aes128-cbc|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#aes128-cbc>
 
-=item * L<aes196-cbc|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#aes192-cbc>
+=item * L<aes192-cbc|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#aes192-cbc>
 
 =item * L<aes256-cbc|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#aes256-cbc>
+
+=item * L<aes128-gcm|https://www.w3.org/TR/xmlenc-core/#aes128-gcm>
+
+=item * L<aes192-gcm|https://www.w3.org/TR/xmlenc-core/#aes192-gcm>
+
+=item * L<aes256-gcm|https://www.w3.org/TR/xmlenc-core/#aes256-gcm>
 
 =back
 
@@ -166,7 +172,7 @@ sub new {
     my $enc_method = exists($params->{'data_enc_method'}) ? $params->{'data_enc_method'} : 'aes256-cbc';
     $self->{'data_enc_method'} = $self->_setEncryptionMethod($enc_method);
 
-    my $key_method = exists($params->{'key_transport'}) ? $params->{'key_transport'} : 'rsa-1_5';
+    my $key_method = exists($params->{'key_transport'}) ? $params->{'key_transport'} : 'rsa-oaep-mgf1p ';
     $self->{'key_transport'} = $self->_setKeyEncryptionMethod($key_method);
 
     return $self;
