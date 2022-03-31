@@ -15,7 +15,7 @@ use Crypt::Random qw( makerandom_octet );
 
 use vars qw($VERSION @EXPORT_OK %EXPORT_TAGS $DEBUG);
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 
 our $DEBUG = 0;
 
