@@ -2,6 +2,7 @@ use strict;
 use warnings;
 
 package XML::Enc;
+# VERSION
 
 # ABSTRACT: XML::Enc Encryption Support
 
@@ -9,13 +10,11 @@ use Carp;
 use XML::LibXML;
 use Crypt::OpenSSL::RSA;
 use Crypt::Mode::CBC;
-use Crypt::AuthEnc::GCM;
+use Crypt::AuthEnc::GCM 0.062;
 use MIME::Base64 qw/decode_base64 encode_base64/;
 use Crypt::Random qw( makerandom_octet );
 
 use vars qw($VERSION @EXPORT_OK %EXPORT_TAGS $DEBUG);
-
-our $VERSION = '0.05';
 
 our $DEBUG = 0;
 
