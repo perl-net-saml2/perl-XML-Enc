@@ -339,6 +339,7 @@ sub _getKeyEncryptionMethod {
     my $xpc     = shift;
     my $context = shift;
 
+    my %method;
     if ($xpc->findvalue('dsig:KeyInfo/dsig:RetrievalMethod/@Type', $context)
                 eq 'http://www.w3.org/2001/04/xmlenc#EncryptedKey')
     {
@@ -349,9 +350,15 @@ sub _getKeyEncryptionMethod {
         if (! $keyinfo ) {
             die "Unable to find EncryptedKey";
         }
-        return $keyinfo->[0]->findvalue('//xenc:EncryptedKey/xenc:EncryptionMethod/@Algorithm', $context);
+        $method{Algorithm} = $keyinfo->[0]->findvalue('//xenc:EncryptedKey/xenc:EncryptionMethod/@Algorithm', $context);
+        $method{KeySize}   = $keyinfo->[0]->findvalue('//xenc:EncryptedKey/xenc:EncryptionMethod/xenc:KeySize', $context);
+        $method{OAEPparams} = $keyinfo->[0]->findvalue('//xenc:EncryptedKey/xenc:EncryptionMethod/xenc:OAEPparams', $context);
+        return \%method;
     }
-    return $xpc->findvalue('dsig:KeyInfo/xenc:EncryptedKey/xenc:EncryptionMethod/@Algorithm', $context)
+    $method{Algorithm} = $xpc->findvalue('dsig:KeyInfo/xenc:EncryptedKey/xenc:EncryptionMethod/@Algorithm', $context);
+    $method{KeySize}   = $xpc->findvalue('dsig:KeyInfo/xenc:EncryptedKey/xenc:EncryptionMethod/xenc:KeySize', $context);
+    $method{OAEPparams} = $xpc->findvalue('dsig:KeyInfo/xenc:EncryptedKey/xenc:EncryptionMethod/xenc:OAEPparams', $context);
+    return \%method;
 }
 
 sub _setKeyEncryptionMethod {
@@ -445,10 +452,10 @@ sub _DecryptKey {
     my $keymethod       = shift;
     my $encryptedkey    = shift;
 
-    if ($keymethod eq 'http://www.w3.org/2001/04/xmlenc#rsa-1_5') {
+    if ($keymethod->{Algorithm} eq 'http://www.w3.org/2001/04/xmlenc#rsa-1_5') {
         $self->{key_obj}->use_pkcs1_padding;
     }
-    elsif ($keymethod eq 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p') {
+    elsif ($keymethod->{Algorithm} eq 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p') {
         $self->{key_obj}->use_pkcs1_oaep_padding;
     } else {
         die "Unsupported Key Encryption Method";
