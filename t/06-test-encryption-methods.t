@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 56;
+use Test::More tests => 126;
 use XML::Enc;
 use MIME::Base64 qw/decode_base64 encode_base64/;
 use File::Which;
@@ -14,6 +14,7 @@ XML
 
 my @key_methods     = qw/rsa-1_5 rsa-oaep-mgf1p/;
 my @data_methods    = qw/aes128-cbc aes192-cbc aes256-cbc tripledes-cbc aes128-gcm aes192-gcm aes256-gcm/;
+my @oaep_methods    = qw/mgf1sha1 mgf1sha224 mgf1sha256 mgf1sha384 mgf1sha512/;
 
 foreach my $km (@key_methods) {
     foreach my $dm (@data_methods) {
@@ -47,7 +48,26 @@ foreach my $km (@key_methods) {
                 or warn "calling xmlsec1 failed: '$verify_response'\n";
             unlink 'tmp.xml';
         }
+    }
+}
 
+foreach my $om (@oaep_methods) {
+    foreach my $dm (@data_methods) {
+        my $encrypter = XML::Enc->new(
+            {
+                key                 => 't/sign-private.pem',
+                cert                => 't/sign-certonly.pem',
+                data_enc_method     => $dm,
+                key_transport       => 'rsa-oaep',
+                oaep_method         => $om,
+                no_xml_declaration  => 1
+            }
+        );
+
+        my $encrypted = $encrypter->encrypt($xml);
+        ok($encrypted  =~ /EncryptedData/, "Successfully Encrypted: Key Method 'rsa-oaep' with $om Data Method $dm");
+
+        ok($encrypter->decrypt($encrypted) =~ /XML-SIG_1/, "Successfully Decrypted with XML::Enc");
     }
 }
 done_testing;
