@@ -147,6 +147,24 @@ Used in encryption.  Optional.  Default method: rsa-1_5
 
 =back
 
+=item B<oaep_method>
+
+Specify the Algorithm to be used for rsa-oaep.  Supported methods are:
+
+=over
+
+=item * L<mgf1sha1|http://www.w3.org/2009/xmlenc11#mgf1sha1>
+
+=item * L<mgf1sha224|http://www.w3.org/2009/xmlenc11#mgf1sha224>
+
+=item * L<mgf1sha265|http://www.w3.org/2009/xmlenc11#mgf1sha256>
+
+=item * L<mgf1sha384|http://www.w3.org/2009/xmlenc11#mgf1sha384>
+
+=item * L<mgf1sha512|http://www.w3.org/2009/xmlenc11#mgf1sha512>
+
+=back
+
 =back
 
 =cut
@@ -178,6 +196,8 @@ sub new {
 
     my $oaep_method = exists($params->{'oaep_method'}) ? $params->{'oaep_method'} : 'http://www.w3.org/2009/xmlenc11#mgf1sha1';
     $self->{'oaep_method'} = $self->_setOAEPAlgorithm($oaep_method);
+
+    $self->{'oaep_params'} = exists($params->{'oaep_params'}) ? $params->{'oaep_params'} : '';
 
     return $self;
 }
@@ -297,6 +317,11 @@ sub encrypt {
     my $base64_key  = encode_base64($key);
     my $base64_data = encode_base64($encrypteddata);
 
+    # Insert OAEPparams into the XML
+    if ($self->{oaep_params} ne '') {
+        $encrypted = $self->_setOAEPparams($encrypted, $xpc, encode_base64($self->{oaep_params}));
+    }
+
     # Insert Encrypted data into XML
     $encrypted = $self->_setEncryptedData($encrypted, $xpc, $base64_data);
 
@@ -337,6 +362,19 @@ sub _setEncryptionMethod {
                   );
 
     return exists($methods{$method}) ? $methods{$method} : $methods{'aes256-cbc'};
+}
+
+sub _setOAEPparams {
+    my $self         = shift;
+    my $context      = shift;
+    my $xpc          = shift;
+    my $oaep_params  = shift;
+
+    my $node = $xpc->findnodes('//xenc:EncryptedKey/xenc:EncryptionMethod/xenc:OAEPparams', $context);
+
+    $node->[0]->removeChildNodes();
+    $node->[0]->appendText($oaep_params);
+    return $context;
 }
 
 sub _setOAEPAlgorithm {
@@ -517,10 +555,10 @@ sub _EncryptKey {
         ${$key} = $rsa_pub->encrypt(${$key}, 'v1.5');
     }
     elsif ($keymethod eq 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p') {
-        ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', 'SHA1');
+        ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', 'SHA1', $self->{oaep_params});
     }
     elsif ($keymethod eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
-        ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', $self->_getOAEPAlgorithm($self->{oaep_method}));
+        ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', $self->_getOAEPAlgorithm($self->{oaep_method}), $self->{oaep_params});
     } else {
         die "Unsupported Key Encryption Method";
     }
@@ -864,6 +902,15 @@ sub _create_encrypted_data_xml {
                                 Algorithm => $self->{key_transport},
                             }
                         );
+
+    if ($self->{'oaep_params'} ne '') {
+        my $oaep_params = $self->_create_node(
+                            $doc,
+                            $xencns,
+                            $kencmethod,
+                            'xenc:OAEPparams',
+                        );
+    };
 
     if ($self->{key_transport} eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
         my $oaepmethod = $self->_create_node(
