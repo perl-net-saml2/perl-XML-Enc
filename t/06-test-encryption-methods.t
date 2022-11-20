@@ -14,7 +14,7 @@ XML
 
 my @key_methods     = qw/rsa-1_5 rsa-oaep-mgf1p/;
 my @data_methods    = qw/aes128-cbc aes192-cbc aes256-cbc tripledes-cbc aes128-gcm aes192-gcm aes256-gcm/;
-my @oaep_methods    = qw/mgf1sha1 mgf1sha224 mgf1sha256 mgf1sha384 mgf1sha512/;
+my @oaep_mgf_algs   = qw/mgf1sha1 mgf1sha224 mgf1sha256 mgf1sha384 mgf1sha512/;
 
 foreach my $km (@key_methods) {
     foreach my $dm (@data_methods) {
@@ -51,7 +51,7 @@ foreach my $km (@key_methods) {
     }
 }
 
-foreach my $om (@oaep_methods) {
+foreach my $om (@oaep_mgf_algs) {
     foreach my $dm (@data_methods) {
         my $encrypter = XML::Enc->new(
             {
@@ -59,7 +59,7 @@ foreach my $om (@oaep_methods) {
                 cert                => 't/sign-certonly.pem',
                 data_enc_method     => $dm,
                 key_transport       => 'rsa-oaep',
-                oaep_method         => $om,
+                oaep_mgf_alg        => $om,
                 no_xml_declaration  => 1
             }
         );

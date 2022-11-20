@@ -135,7 +135,7 @@ Used in encryption.  Optional.  Default method: aes256-cbc
 
 Specify the encryption method to be used for key transport.  Supported methods are:
 
-Used in encryption.  Optional.  Default method: rsa-1_5
+Used in encryption.  Optional.  Default method: rsa-oaep-mgf1p
 
 =over
 
@@ -143,13 +143,15 @@ Used in encryption.  Optional.  Default method: rsa-1_5
 
 =item * L<rsa-oaep-mgf1p|https://www.w3.org/TR/2002/REC-xmlenc-core-20021210/Overview.html#rsa-oaep-mgf1p>
 
-=item * L<rsa-oaep (Experimental)| http://www.w3.org/2009/xmlenc11#rsa-oaep>
+=item * L<rsa-oaep|http://www.w3.org/2009/xmlenc11#rsa-oaep>
 
 =back
 
-=item B<oaep_method>
+=item B<oaep_mgf_alg>
 
-Specify the Algorithm to be used for rsa-oaep.  Supported methods are:
+Specify the Algorithm to be used for rsa-oaep.  Supported algorithms are:
+
+Used in encryption.  Optional.  Default method: mgf1sha1
 
 =over
 
@@ -194,8 +196,8 @@ sub new {
     my $key_method = exists($params->{'key_transport'}) ? $params->{'key_transport'} : 'rsa-oaep-mgf1p ';
     $self->{'key_transport'} = $self->_setKeyEncryptionMethod($key_method);
 
-    my $oaep_method = exists($params->{'oaep_method'}) ? $params->{'oaep_method'} : 'http://www.w3.org/2009/xmlenc11#mgf1sha1';
-    $self->{'oaep_method'} = $self->_setOAEPAlgorithm($oaep_method);
+    my $oaep_mgf_alg = exists($params->{'oaep_mgf_alg'}) ? $params->{'oaep_mgf_alg'} : 'http://www.w3.org/2009/xmlenc11#mgf1sha1';
+    $self->{'oaep_mgf_alg'} = $self->_setOAEPAlgorithm($oaep_mgf_alg);
 
     $self->{'oaep_params'} = exists($params->{'oaep_params'}) ? $params->{'oaep_params'} : '';
 
@@ -558,7 +560,7 @@ sub _EncryptKey {
         ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', 'SHA1', $self->{oaep_params});
     }
     elsif ($keymethod eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
-        ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', $self->_getOAEPAlgorithm($self->{oaep_method}), $self->{oaep_params});
+        ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', $self->_getOAEPAlgorithm($self->{oaep_mgf_alg}), $self->{oaep_params});
     } else {
         die "Unsupported Key Encryption Method";
     }
@@ -919,7 +921,7 @@ sub _create_encrypted_data_xml {
                             $kencmethod,
                             'xenc:MGF',
                             {
-                                Algorithm => $self->{oaep_method},
+                                Algorithm => $self->{oaep_mgf_alg},
                             }
                         );
     };
