@@ -1,3 +1,6 @@
+name: Perl Matrix Testing
+on:
+  - push
 jobs:
   build:
     runs-on: ${{ matrix.os }}
