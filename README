@@ -2,7 +2,7 @@ NAME
     XML::Enc - XML::Enc Encryption Support
 
 VERSION
-    version 0.07
+    version 0.08
 
 SYNOPSIS
         my $decrypter = XML::Enc->new(
@@ -88,7 +88,7 @@ METHODS
         *   rsa-oaep <http://www.w3.org/2009/xmlenc11#rsa-oaep>
 
     oaep_mgf_alg
-        Specify the Algorithm to be used for rsa-oaep. Supported methods
+        Specify the Algorithm to be used for rsa-oaep. Supported algorithms
         are:
 
         Used in encryption. Optional. Default method: mgf1sha1
