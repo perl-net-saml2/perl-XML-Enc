@@ -30,6 +30,7 @@ my %WriteMakefileArgs = (
   },
   "TEST_REQUIRES" => {
     "Crypt::OpenSSL::Guess" => 0,
+    "CryptX" => 0,
     "Exporter" => 0,
     "File::Slurper" => 0,
     "File::Which" => 0,
@@ -53,6 +54,7 @@ my %FallbackPrereqs = (
   "Crypt::OpenSSL::X509" => 0,
   "Crypt::PK::RSA" => 0,
   "Crypt::PRNG" => 0,
+  "CryptX" => 0,
   "Exporter" => 0,
   "File::Slurper" => 0,
   "File::Which" => 0,
