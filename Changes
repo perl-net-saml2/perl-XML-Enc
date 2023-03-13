@@ -2,6 +2,18 @@ Revision history for Perl extension XML::Enc.
 
 {{$NEXT}}
 
+    [ Major change since 0.08 ]
+
+    @NGEfreak asked if Crypt::Random could be replaced with Crypt::PRNG
+    to eliminate the need for pari which requires network connectivity.
+    Makes sense because CryptX is already a dependency.
+
+    - 53dd0eb Update Windows and Linux Github Actions
+    - 9ee72a9 Use Test::XML::Enc to determine xmlsec features
+    - 9f01450 Replace Crypt::Random with Crypt::PRNG to emiminate pari requirment
+    - de6ffdd Increment version number for repo and update Copyright
+    - c72b1ca v0.08
+
 0.08 -- Mon Nov 21 22:17:44 AST 2022
 
     - d729f2c Release 0.07-TRIAL as production
