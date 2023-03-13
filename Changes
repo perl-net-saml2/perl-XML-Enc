@@ -2,6 +2,8 @@ Revision history for Perl extension XML::Enc.
 
 {{$NEXT}}
 
+0.09 -- Sun Mar 12 22:03:24 ADT 2023
+
     [ Major change since 0.08 ]
 
     @NGEfreak asked if Crypt::Random could be replaced with Crypt::PRNG
