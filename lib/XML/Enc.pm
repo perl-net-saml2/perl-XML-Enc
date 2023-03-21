@@ -469,10 +469,10 @@ sub _DecryptData {
 
     # XML Encryption 5.2 Block Encryption Algorithms
     # The resulting cipher text is prefixed by the IV.
-    if (defined $encmethods{$method} & $method !~ /gcm/ ){
+    if (defined $encmethods{$method} && $method !~ /gcm/ ){
         my $cbc     = Crypt::Mode::CBC->new($encmethods{$method}->{modename}, 0);
         $plaintext  = $self->_remove_padding($cbc->decrypt($encrypted, $key, $iv));
-    } elsif (defined $encmethods{$method} & $method =~ /gcm/ ){
+    } elsif (defined $encmethods{$method} && $method =~ /gcm/ ){
         my $gcm     = Crypt::AuthEnc::GCM->new("AES", $key, $iv);
 
         # Note that GCM support for additional authentication
@@ -503,13 +503,13 @@ sub _EncryptData {
     my $iv      = random_bytes ( $ivsize);
     ${$key}     = random_bytes ( $keysize);
 
-    if (defined $encmethods{$method} & $method !~ /gcm/ ){
+    if (defined $encmethods{$method} && $method !~ /gcm/ ){
         my $cbc = Crypt::Mode::CBC->new($encmethods{$method}->{modename}, 0);
         # XML Encryption 5.2 Block Encryption Algorithms
         # The resulting cipher text is prefixed by the IV.
         $data       = $self->_add_padding($data, $ivsize);
         $cipherdata = $iv . $cbc->encrypt($data, ${$key}, $iv);
-    } elsif (defined $encmethods{$method} & $method =~ /gcm/ ){
+    } elsif (defined $encmethods{$method} && $method =~ /gcm/ ){
         my $gcm = Crypt::AuthEnc::GCM->new($encmethods{$method}->{modename}, ${$key}, $iv);
 
         # Note that GCM support for additional authentication
