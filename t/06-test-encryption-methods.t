@@ -18,7 +18,7 @@ my @data_methods    = qw/aes128-cbc aes192-cbc aes256-cbc tripledes-cbc aes128-g
 my @oaep_mgf_algs   = qw/mgf1sha1 mgf1sha224 mgf1sha256 mgf1sha384 mgf1sha512/;
 
 my $xmlsec = get_xmlsec_features();
-my $lax_key_search = $xmlsec->{lax_key_search} ? '--lax_key_search': '';
+my $lax_key_search = $xmlsec->{lax_key_search} ? '--lax-key-search': '';
 
 foreach my $km (@key_methods) {
     foreach my $dm (@data_methods) {
