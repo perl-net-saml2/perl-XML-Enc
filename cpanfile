@@ -15,6 +15,7 @@ requires "warnings" => "0";
 
 on 'test' => sub {
   requires "Crypt::OpenSSL::Guess" => "0";
+  requires "CryptX" => "0";
   requires "Exporter" => "0";
   requires "File::Slurper" => "0";
   requires "File::Which" => "0";
