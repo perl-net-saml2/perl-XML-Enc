@@ -221,8 +221,8 @@ XML containing the encrypted data.
 =cut
 
 sub decrypt {
-    my $self    = shift;
-    my ($xml)   = @_;
+    my $self = shift;
+    my $xml  = shift;
 
     die "You cannot decrypt XML without a private key." unless $self->{key};
 
@@ -484,7 +484,7 @@ sub _DecryptData {
             die "Tag expected did not match returned Tag";
         }
     } else {
-        die "Unsupported Encryption Algorithm";
+        die "Unsupported Encryption Algorithm: $method";
     }
 
     return $plaintext;
@@ -539,7 +539,7 @@ sub _DecryptKey {
     elsif ($keymethod->{Algorithm} eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
         return $self->{key_obj}->decrypt($encryptedkey, 'oaep', $self->_getOAEPAlgorithm($keymethod->{MGF}), decode_base64($keymethod->{OAEPparams}));
     } else {
-        die "Unsupported Key Encryption Method";
+        die "Unsupported algorithm for key decryption: $keymethod->{Algorithm}";
     }
 
     print "Decrypted key: ", encode_base64($self->{key_obj}->decrypt($encryptedkey)) if $DEBUG;
@@ -562,7 +562,7 @@ sub _EncryptKey {
     elsif ($keymethod eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
         ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', $self->_getOAEPAlgorithm($self->{oaep_mgf_alg}), $self->{oaep_params});
     } else {
-        die "Unsupported Key Encryption Method";
+        die "Unsupported algorithm for key encyption $keymethod}";
     }
 
     print "Encrypted key: ", encode_base64(${$key}) if $DEBUG;
