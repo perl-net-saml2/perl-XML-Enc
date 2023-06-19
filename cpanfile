@@ -8,6 +8,7 @@ requires "Crypt::PK::RSA" => "0";
 requires "Crypt::PRNG" => "0";
 requires "MIME::Base64" => "0";
 requires "XML::LibXML" => "0";
+requires "feature" => "0";
 requires "perl" => "5.008";
 requires "strict" => "0";
 requires "vars" => "0";

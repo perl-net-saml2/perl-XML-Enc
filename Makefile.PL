@@ -24,6 +24,7 @@ my %WriteMakefileArgs = (
     "Crypt::PRNG" => 0,
     "MIME::Base64" => 0,
     "XML::LibXML" => 0,
+    "feature" => 0,
     "strict" => 0,
     "vars" => 0,
     "warnings" => 0
@@ -38,7 +39,7 @@ my %WriteMakefileArgs = (
     "Test::More" => 0,
     "namespace::autoclean" => 0
   },
-  "VERSION" => "0.11",
+  "VERSION" => "0.12",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -61,6 +62,7 @@ my %FallbackPrereqs = (
   "Test::Lib" => 0,
   "Test::More" => 0,
   "XML::LibXML" => 0,
+  "feature" => 0,
   "namespace::autoclean" => 0,
   "strict" => 0,
   "vars" => 0,

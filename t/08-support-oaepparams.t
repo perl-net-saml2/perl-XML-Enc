@@ -1,6 +1,6 @@
 use strict;
 use warnings;
-use Test::More tests => 7;
+use Test::More;
 use XML::Enc;
 use Test::Lib;
 use Test::XML::Enc;
@@ -106,7 +106,7 @@ my $ret;
 eval {
     $ret = $decrypter->decrypt($encrypted);
 };
-like($@, qr/FATAL: rsa_decrypt_key_ex/,"XML::Enc Unable to decrypt if XML includes incorrect OAEPparams");
-ok(!$ret);
+
+like($ret, qr/MTIzNzg5Cg==/, "Not decrypted due to invalid oaep_params params");
 
 done_testing;
