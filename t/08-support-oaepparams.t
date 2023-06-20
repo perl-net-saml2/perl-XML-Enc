@@ -56,7 +56,7 @@ my $decrypter = XML::Enc->new(
     }
 );
 
-ok($decrypter->decrypt($xml) =~ /4019 2445 0277 5567/, "Successfully Decrypted xmlsec1 xml using OAEPparams");
+like($decrypter->decrypt($xml), qr/4019 2445 0277 5567/, "Successfully Decrypted xmlsec1 xml using OAEPparams");
 
 $xml = <<'XML';
 <?xml version="1.0"?>
@@ -75,9 +75,9 @@ my $encrypter = XML::Enc->new(
 );
 
 my $encrypted = $encrypter->encrypt($xml);
-ok($encrypted =~ /CipherData/, "Successfully Encrypted with XML::Enc using OAEPparams");
+like($encrypted, qr/CipherData/, "Successfully Encrypted with XML::Enc using OAEPparams");
 
-ok($encrypter->decrypt($encrypted) =~ /<bar>123<\/bar>/, "Successfully Decrypted with XML::Enc using OAEPparams");
+like($encrypter->decrypt($encrypted), qr/<bar>123<\/bar>/, "Successfully Decrypted with XML::Enc using OAEPparams");
 
 SKIP: {
     skip "xmlsec1 not installed", 2 unless $xmlsec->{installed};
@@ -106,7 +106,7 @@ my $ret;
 eval {
     $ret = $decrypter->decrypt($encrypted);
 };
-ok($@ =~ /FATAL: rsa_decrypt_key_ex/,"XML::Enc Unable to decrypt if XML includes incorrect OAEPparams");
+like($@, qr/FATAL: rsa_decrypt_key_ex/,"XML::Enc Unable to decrypt if XML includes incorrect OAEPparams");
 ok(!$ret);
 
 done_testing;
