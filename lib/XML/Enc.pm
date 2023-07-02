@@ -261,6 +261,7 @@ sub decrypt {
     my $xpc = XML::LibXML::XPathContext->new($doc);
     $xpc->registerNs('dsig', 'http://www.w3.org/2000/09/xmldsig#');
     $xpc->registerNs('xenc', 'http://www.w3.org/2001/04/xmlenc#');
+    $xpc->registerNs('xenc11', 'http://www.w3.org/2009/xmlenc11#');
     $xpc->registerNs('saml', 'urn:oasis:names:tc:SAML:2.0:assertion');
 
     return $doc unless $xpc->exists('//xenc:EncryptedData');
@@ -425,7 +426,7 @@ sub _get_mgf {
     my $node = shift;
     my $xpc  = shift;
 
-    my $value = $xpc->findvalue('./xenc:EncryptionMethod/xenc:MGF/@Algorithm', $node);
+    my $value = $xpc->findvalue('./xenc:EncryptionMethod/xenc11:MGF/@Algorithm', $node);
     return $value if $value;
     return;
 }
@@ -481,6 +482,7 @@ sub encrypt {
     my $xpc = XML::LibXML::XPathContext->new($encrypted);
     $xpc->registerNs('dsig', 'http://www.w3.org/2000/09/xmldsig#');
     $xpc->registerNs('xenc', 'http://www.w3.org/2001/04/xmlenc#');
+    $xpc->registerNs('xenc11', 'http://www.w3.org/2009/xmlenc11#');
     $xpc->registerNs('saml', 'urn:oasis:names:tc:SAML:2.0:assertion');
 
     # Encrypt the data an empty key is passed by reference to allow
@@ -981,6 +983,7 @@ sub _create_encrypted_data_xml {
 
     my $xencns = 'http://www.w3.org/2001/04/xmlenc#';
     my $dsigns = 'http://www.w3.org/2000/09/xmldsig#';
+    my $xenc11ns = 'http://www.w3.org/2009/xmlenc11#';
 
     my $encdata = $self->_create_node($doc, $xencns, $doc, 'xenc:EncryptedData',
                             {
@@ -1036,9 +1039,9 @@ sub _create_encrypted_data_xml {
     if ($self->{key_transport} eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
         my $oaepmethod = $self->_create_node(
                             $doc,
-                            $xencns,
+                            $xenc11ns,
                             $kencmethod,
-                            'xenc:MGF',
+                            'xenc11:MGF',
                             {
                                 Algorithm => $self->{oaep_mgf_alg},
                             }
