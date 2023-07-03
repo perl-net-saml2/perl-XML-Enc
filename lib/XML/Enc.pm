@@ -304,7 +304,7 @@ sub _decrypt_uri_nodes {
     my %options = @_;
 
     my $uri_nodes = $xpc->findnodes('//dsig:KeyInfo/dsig:RetrievalMethod/@URI');
-    my @uri_nodes = $uri_nodes->map(sub { my $v = $_->getValue; $v =~ s/^#//r });
+    my @uri_nodes = $uri_nodes->map(sub { my $v = $_->getValue; $v =~ s/^#//; return $v; });
 
     foreach my $uri (@uri_nodes) {
         my $encrypted_key_nodes = $self->_get_named_key_nodes(
@@ -547,43 +547,43 @@ sub _setOAEPAlgorithm {
     my $self    = shift;
     my $method  = shift;
 
-    my %methods = (
-                    'mgf1sha1' => 'http://www.w3.org/2009/xmlenc11#mgf1sha1',
-                    'mgf1sha224' => 'http://www.w3.org/2009/xmlenc11#mgf1sha224',
-                    'mgf1sha256' => 'http://www.w3.org/2009/xmlenc11#mgf1sha256',
-                    'mgf1sha384' => 'http://www.w3.org/2009/xmlenc11#mgf1sha384',
-                    'mgf1sha512' => 'http://www.w3.org/2009/xmlenc11#mgf1sha512',
-                );
+    state $setOAEPAlgorithm = {
+        'mgf1sha1'   => 'http://www.w3.org/2009/xmlenc11#mgf1sha1',
+        'mgf1sha224' => 'http://www.w3.org/2009/xmlenc11#mgf1sha224',
+        'mgf1sha256' => 'http://www.w3.org/2009/xmlenc11#mgf1sha256',
+        'mgf1sha384' => 'http://www.w3.org/2009/xmlenc11#mgf1sha384',
+        'mgf1sha512' => 'http://www.w3.org/2009/xmlenc11#mgf1sha512',
+    };
 
-    return exists($methods{$method}) ? $methods{$method} : $methods{'mgf1sha1'};
+    return $setOAEPAlgorithm->{$method} // $setOAEPAlgorithm->{'rsa-oaep-mgf1p'};
 }
 
 sub _getOAEPAlgorithm {
     my $self    = shift;
     my $method  = shift;
 
-    state %OAEPAlgorithm = (
+    state $OAEPAlgorithm = {
         'http://www.w3.org/2009/xmlenc11#mgf1sha1'   => 'SHA1',
         'http://www.w3.org/2009/xmlenc11#mgf1sha224' => 'SHA224',
         'http://www.w3.org/2009/xmlenc11#mgf1sha256' => 'SHA256',
         'http://www.w3.org/2009/xmlenc11#mgf1sha384' => 'SHA384',
         'http://www.w3.org/2009/xmlenc11#mgf1sha512' => 'SHA512',
-    );
+    };
 
-    return $OAEPAlgorithm{$method} // 'SHA1';
+    return $OAEPAlgorithm->{$method} // 'SHA1';
 }
 
 sub _setKeyEncryptionMethod {
     my $self    = shift;
     my $method  = shift;
 
-    my %methods = (
-                    'rsa-1_5'           => 'http://www.w3.org/2001/04/xmlenc#rsa-1_5',
-                    'rsa-oaep-mgf1p'    => 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p',
-                    'rsa-oaep'          => 'http://www.w3.org/2009/xmlenc11#rsa-oaep',
-                );
+    state $enc_methods = {
+        'rsa-1_5'        => 'http://www.w3.org/2001/04/xmlenc#rsa-1_5',
+        'rsa-oaep-mgf1p' => 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p',
+        'rsa-oaep'       => 'http://www.w3.org/2009/xmlenc11#rsa-oaep',
+    };
 
-    return exists($methods{$method}) ? $methods{$method} : $methods{'rsa-oaep-mgf1p'};
+    return $enc_methods->{$method} // $enc_methods->{'rsa-oaep-mgf1p'};
 }
 
 sub _DecryptData {
