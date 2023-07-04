@@ -27,22 +27,22 @@ XML::Enc - XML Encryption
 =head1 SYNOPSIS
 
     my $decrypter = XML::Enc->new(
-                                {
-                                    key                         => 't/sign-private.pem',
-                                    no_xml_declaration          => 1,
-                                },
-                            );
+        {
+            key                => 't/sign-private.pem',
+            no_xml_declaration => 1,
+        },
+    );
     $decrypted = $enc->decrypt($xml);
 
     my $encrypter = XML::Enc->new(
-                                {
-                                    cert                => 't/sign-certonly.pem',
-                                    no_xml_declaration  => 1,
-                                    data_enc_method     => 'aes256-cbc',
-                                    key_transport       => 'rsa-1_5',
+        {
+            cert               => 't/sign-certonly.pem',
+            no_xml_declaration => 1,
+            data_enc_method    => 'aes256-cbc',
+            key_transport      => 'rsa-1_5',
 
-                                },
-                            );
+        },
+    );
     $encrypted = $enc->encrypt($xml);
 
 =head1 METHODS
@@ -367,17 +367,20 @@ sub _decrypt_encrypted_node {
     # Sooo.. parse_balanced_chunk breaks when there is a <xml version="1'>
     # bit in the decrypted data and thus we have to remove it.
     # We try parsing the XML here and if that works we get all the nodes
-    my $fragment;
-    eval {
-        $fragment = $parser->load_xml(string => $decrypted_data)->findnodes('//*')->[0];
-    };
-    $fragment = $parser->parse_balanced_chunk($fragment // $decrypted_data);
+    my $new = eval { $parser->load_xml(string => $decrypted_data)->findnodes('//*')->[0]; };
 
-    if (($node->parentNode->localname //'') eq 'EncryptedID') {
-        $node->parentNode->replaceNode($fragment);
+    if ($new) {
+        $node->addSibling($new);
+        $node->unbindNode();
         return;
     }
-    $node->replaceNode($fragment);
+
+    $decrypted_data = $parser->parse_balanced_chunk($decrypted_data);
+    if (($node->parentNode->localname //'') eq 'EncryptedID') {
+        $node->parentNode->replaceNode($decrypted_data);
+        return;
+    }
+    $node->replaceNode($decrypted_data);
     return;
 }
 

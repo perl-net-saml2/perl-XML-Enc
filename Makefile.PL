@@ -37,9 +37,10 @@ my %WriteMakefileArgs = (
     "Import::Into" => 0,
     "Test::Lib" => 0,
     "Test::More" => 0,
+    "XML::LibXML::XPathContext" => 0,
     "namespace::autoclean" => 0
   },
-  "VERSION" => "0.12",
+  "VERSION" => "0.13",
   "test" => {
     "TESTS" => "t/*.t"
   }
@@ -62,6 +63,7 @@ my %FallbackPrereqs = (
   "Test::Lib" => 0,
   "Test::More" => 0,
   "XML::LibXML" => 0,
+  "XML::LibXML::XPathContext" => 0,
   "feature" => 0,
   "namespace::autoclean" => 0,
   "strict" => 0,

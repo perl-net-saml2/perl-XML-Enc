@@ -22,6 +22,7 @@ on 'test' => sub {
   requires "Import::Into" => "0";
   requires "Test::Lib" => "0";
   requires "Test::More" => "0";
+  requires "XML::LibXML::XPathContext" => "0";
   requires "namespace::autoclean" => "0";
 };
 
