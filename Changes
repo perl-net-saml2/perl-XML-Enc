@@ -2,6 +2,18 @@ Revision history for Perl extension XML::Enc.
 
 {{$NEXT}}
 
+0.13 -- Tue Jul 04 18:57:34 ADT 2023
+
+    [ Major change since 0.11 ]
+
+    So... 326d823 fixes an issue introduced in 0.11.  You can ignore my
+    comments in the 0.11 Changes...
+
+    [Change Log]
+    - 7321de2 Indent SYNOPIS
+    - 326d823 Fix disappearing namespace bug in _decrypt_encrypted_node
+    - 2038d04 v0.12
+
 0.12 -- Mon Jul 03 16:12:56 ADT 2023
 
     [ Major change since 0.11 ]
