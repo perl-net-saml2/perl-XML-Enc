@@ -27,22 +27,22 @@ XML::Enc - XML Encryption
 =head1 SYNOPSIS
 
     my $decrypter = XML::Enc->new(
-                                {
-                                    key                         => 't/sign-private.pem',
-                                    no_xml_declaration          => 1,
-                                },
-                            );
+        {
+            key                => 't/sign-private.pem',
+            no_xml_declaration => 1,
+        },
+    );
     $decrypted = $enc->decrypt($xml);
 
     my $encrypter = XML::Enc->new(
-                                {
-                                    cert                => 't/sign-certonly.pem',
-                                    no_xml_declaration  => 1,
-                                    data_enc_method     => 'aes256-cbc',
-                                    key_transport       => 'rsa-1_5',
+        {
+            cert               => 't/sign-certonly.pem',
+            no_xml_declaration => 1,
+            data_enc_method    => 'aes256-cbc',
+            key_transport      => 'rsa-1_5',
 
-                                },
-                            );
+        },
+    );
     $encrypted = $enc->encrypt($xml);
 
 =head1 METHODS
