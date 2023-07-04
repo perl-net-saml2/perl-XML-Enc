@@ -367,17 +367,20 @@ sub _decrypt_encrypted_node {
     # Sooo.. parse_balanced_chunk breaks when there is a <xml version="1'>
     # bit in the decrypted data and thus we have to remove it.
     # We try parsing the XML here and if that works we get all the nodes
-    my $fragment;
-    eval {
-        $fragment = $parser->load_xml(string => $decrypted_data)->findnodes('//*')->[0];
-    };
-    $fragment = $parser->parse_balanced_chunk($fragment // $decrypted_data);
+    my $new = eval { $parser->load_xml(string => $decrypted_data)->findnodes('//*')->[0]; };
 
-    if (($node->parentNode->localname //'') eq 'EncryptedID') {
-        $node->parentNode->replaceNode($fragment);
+    if ($new) {
+        $node->addSibling($new);
+        $node->unbindNode();
         return;
     }
-    $node->replaceNode($fragment);
+
+    $decrypted_data = $parser->parse_balanced_chunk($decrypted_data);
+    if (($node->parentNode->localname //'') eq 'EncryptedID') {
+        $node->parentNode->replaceNode($decrypted_data);
+        return;
+    }
+    $node->replaceNode($decrypted_data);
     return;
 }
 
