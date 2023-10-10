@@ -4,7 +4,7 @@ requires "Carp" => "0";
 requires "Crypt::AuthEnc::GCM" => "0.062";
 requires "Crypt::Mode::CBC" => "0";
 requires "Crypt::OpenSSL::X509" => "0";
-requires "Crypt::PK::RSA" => "0";
+requires "Crypt::PK::RSA" => "0.081";
 requires "Crypt::PRNG" => "0";
 requires "MIME::Base64" => "0";
 requires "XML::LibXML" => "0";
@@ -16,6 +16,7 @@ requires "warnings" => "0";
 
 on 'test' => sub {
   requires "Crypt::OpenSSL::Guess" => "0";
+  requires "CryptX" => "0";
   requires "Exporter" => "0";
   requires "File::Slurper" => "0";
   requires "File::Which" => "0";
