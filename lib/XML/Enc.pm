@@ -775,7 +775,7 @@ sub _decrypt_key {
     if ($algo eq 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p') {
         return _decrypt(
             sub {
-                if ($CryptX::VERSION le 0.081) {
+                if ($CryptX::VERSION lt 0.081) {
                     #print "Caller: _decrypt_key  rsa-oaep-mgf1p\n";
                     $self->{key_obj}->decrypt(
                         $key, 'oaep',
@@ -800,7 +800,7 @@ sub _decrypt_key {
     if ($algo eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
         return _decrypt(
             sub {
-                if ($CryptX::VERSION le 0.081) {
+                if ($CryptX::VERSION lt 0.081) {
                     $self->{key_obj}->decrypt(
                         $key, 'oaep',
                         $self->_getOAEPAlgorithm($mgf),
@@ -833,7 +833,7 @@ sub _EncryptKey {
         ${$key} = $rsa_pub->encrypt(${$key}, 'v1.5');
     }
     elsif ($keymethod eq 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p') {
-        if ($CryptX::VERSION le 0.081) {
+        if ($CryptX::VERSION lt 0.081) {
             ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', 'SHA1', $self->{oaep_params});
         } else {
             my $oaep_label_hash = (defined $self->{oaep_label_hash} && $self->{oaep_label_hash} ne '') ?
@@ -844,7 +844,7 @@ sub _EncryptKey {
     elsif ($keymethod eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
         my $mgf_hash    = defined $self->{oaep_mgf_alg} ?
                             $self->_getOAEPAlgorithm($self->{oaep_mgf_alg}) : undef;
-        if ($CryptX::VERSION le 0.081) {
+        if ($CryptX::VERSION lt 0.081) {
             ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', $mgf_hash, $self->{oaep_params});
         } else {
             my $oaep_label_hash = (defined $self->{oaep_label_hash} && $self->{oaep_label_hash} ne '') ?
