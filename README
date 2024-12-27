@@ -134,6 +134,10 @@ METHODS
 
         *   sha512 <http://www.w3.org/2001/04/xmlenc#sha512>
 
+    key_name
+        Specify a key name to add to the KeyName element. If it is not
+        specified then no KeyName element is added to the KeyInfo
+
   decrypt( ... )
     Main decryption function.
 

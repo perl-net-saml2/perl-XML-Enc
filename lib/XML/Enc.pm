@@ -231,6 +231,13 @@ The default is sha1.  Supported algorithms are:
 
 =back
 
+=item B<key_name>
+
+Specify a key name to add to the KeyName element.  If it is not specified then no
+KeyName element is added to the KeyInfo
+
+=back
+
 =cut
 
 sub new {
@@ -266,6 +273,8 @@ sub new {
     }
 
     $self->{'oaep_params'} = exists($params->{'oaep_params'}) ? $params->{'oaep_params'} : '';
+
+    $self->{'key_name'} = $params->{'key_name'} if exists($params->{'key_name'});
 
     return $self;
 }
@@ -539,6 +548,11 @@ sub encrypt {
     my $base64_key  = encode_base64($key);
     my $base64_data = encode_base64($encrypteddata);
 
+    # Insert KeyName into the XML
+    if (defined $self->{key_name} and $self->{key_name} ne '') {
+        $encrypted = $self->_setKeyName($encrypted, $xpc, $self->{key_name});
+    }
+
     # Insert OAEPparams into the XML
     if ($self->{oaep_params} ne '') {
         $encrypted = $self->_setOAEPparams($encrypted, $xpc, encode_base64($self->{oaep_params}));
@@ -568,6 +582,19 @@ sub _setEncryptionMethod {
                   );
 
     return exists($methods{$method}) ? $methods{$method} : $methods{'aes256-cbc'};
+}
+
+sub _setKeyName {
+    my $self         = shift;
+    my $context      = shift;
+    my $xpc          = shift;
+    my $keyname      = shift;
+
+    my $node = $xpc->findnodes('//xenc:EncryptedKey/dsig:KeyInfo/dsig:KeyName', $context);
+
+    $node->[0]->removeChildNodes();
+    $node->[0]->appendText(defined $keyname ? $keyname : 'key_name');
+    return $context;
 }
 
 sub _setOAEPparams {
@@ -1177,12 +1204,14 @@ sub _create_encrypted_data_xml {
                             'dsig:KeyInfo',
                         );
 
-    my $keyname = $self->_create_node(
+    if (defined $self->{key_name}) {
+        my $keyname = $self->_create_node(
                             $doc,
                             $dsigns,
                             $keyinfo2,
                             'dsig:KeyName',
                         );
+    };
 
     my $keycipherdata = $self->_create_node(
                             $doc,

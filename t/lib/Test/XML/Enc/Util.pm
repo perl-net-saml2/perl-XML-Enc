@@ -54,6 +54,7 @@ sub get_xmlsec_features {
                     ripemd160   => ($major >= 1 and $minor >= 3) ? 1 : 0,
                     aes_gcm     => ($major <= 1 and $minor <= 2 and $patch <= 27) ? 0 : 1,
                     lax_key_search => ($major >= 1 and $minor >= 3) ? 1 : 0,
+                    rsa_oaep    => ($major >= 1 and $minor >= 3) ? 1 : 0,
                 );
     return \%xmlsec;
 }
