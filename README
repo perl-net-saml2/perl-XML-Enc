@@ -2,7 +2,7 @@ NAME
     XML::Enc - XML::Enc Encryption Support
 
 VERSION
-    version 0.13
+    version 0.14
 
 SYNOPSIS
         my $decrypter = XML::Enc->new(
