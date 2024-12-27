@@ -9,7 +9,7 @@ package XML::Enc;
 use Carp;
 use Crypt::AuthEnc::GCM 0.062;
 use Crypt::Mode::CBC;
-use Crypt::PK::RSA;
+use Crypt::PK::RSA 0.081;
 use Crypt::PRNG qw( random_bytes );
 use MIME::Base64 qw/decode_base64 encode_base64/;
 use XML::LibXML;
@@ -107,8 +107,10 @@ sub _assert_encryption_digest {
     state $ENC_DIGEST = {
         'http://www.w3.org/2000/09/xmldsig#sha1' => 'SHA1',
         'http://www.w3.org/2001/04/xmlenc#sha256' => 'SHA256',
+        'http://www.w3.org/2001/04/xmldsig-more#sha224' => 'SHA224',
+        'http://www.w3.org/2001/04/xmldsig-more#sha384' => 'SHA384',
+        'http://www.w3.org/2001/04/xmlenc#sha512' => 'SHA512',
     };
-
     die "Unsupported encryption digest algo $algo" unless $ENC_DIGEST->{ $algo };
     return $ENC_DIGEST->{ $algo };
 }
@@ -196,6 +198,44 @@ Used in encryption.  Optional.  Default method: mgf1sha1
 
 =back
 
+=item B<oaep_params>
+
+Specify the OAEPparams value to use as part of the mask generation function (MGF).
+It is optional but can be specified for rsa-oaep and rsa-oaep-mgf1p EncryptionMethods.
+
+It is base64 encoded and stored in the XML as OAEPparams.
+
+If specified you MAY specify the oaep_label_hash that should be used.  You should note
+that not all implementations support an oaep_label_hash that differs from that of the
+MGF specified in the xenc11:MGF element or the default MGF1 with SHA1.
+
+The oaep_label_hash is stored in the DigestMethod child element of the EncryptionMethod.
+
+=item B<oaep_label_hash>
+
+Specify the Hash Algorithm to use for the rsa-oaep label as specified by oaep_params.
+
+The default is sha1.  Supported algorithms are:
+
+=over
+
+=item * L<sha1|http://www.w3.org/2000/09/xmldsig#sha1>
+
+=item * L<sha224|http://www.w3.org/2001/04/xmldsig-more#sha224>
+
+=item * L<sha256|http://www.w3.org/2001/04/xmlenc#sha256>
+
+=item * L<sha384|http://www.w3.org/2001/04/xmldsig-more#sha384>
+
+=item * L<sha512|http://www.w3.org/2001/04/xmlenc#sha512>
+
+=back
+
+=item B<key_name>
+
+Specify a key name to add to the KeyName element.  If it is not specified then no
+KeyName element is added to the KeyInfo
+
 =back
 
 =cut
@@ -225,10 +265,16 @@ sub new {
     my $key_method = exists($params->{'key_transport'}) ? $params->{'key_transport'} : 'rsa-oaep-mgf1p ';
     $self->{'key_transport'} = $self->_setKeyEncryptionMethod($key_method);
 
-    my $oaep_mgf_alg = exists($params->{'oaep_mgf_alg'}) ? $params->{'oaep_mgf_alg'} : 'http://www.w3.org/2009/xmlenc11#mgf1sha1';
-    $self->{'oaep_mgf_alg'} = $self->_setOAEPAlgorithm($oaep_mgf_alg);
+    if (exists $params->{'oaep_mgf_alg'}) {
+        $self->{'oaep_mgf_alg'} = $self->_setOAEPAlgorithm($params->{'oaep_mgf_alg'});
+    }
+    if (exists $params->{'oaep_label_hash'} ) {
+        $self->{'oaep_label_hash'} = $self->_setOAEPDigest($params->{'oaep_label_hash'});
+    }
 
     $self->{'oaep_params'} = exists($params->{'oaep_params'}) ? $params->{'oaep_params'} : '';
+
+    $self->{'key_name'} = $params->{'key_name'} if exists($params->{'key_name'});
 
     return $self;
 }
@@ -502,6 +548,11 @@ sub encrypt {
     my $base64_key  = encode_base64($key);
     my $base64_data = encode_base64($encrypteddata);
 
+    # Insert KeyName into the XML
+    if (defined $self->{key_name} and $self->{key_name} ne '') {
+        $encrypted = $self->_setKeyName($encrypted, $xpc, $self->{key_name});
+    }
+
     # Insert OAEPparams into the XML
     if ($self->{oaep_params} ne '') {
         $encrypted = $self->_setOAEPparams($encrypted, $xpc, encode_base64($self->{oaep_params}));
@@ -531,6 +582,19 @@ sub _setEncryptionMethod {
                   );
 
     return exists($methods{$method}) ? $methods{$method} : $methods{'aes256-cbc'};
+}
+
+sub _setKeyName {
+    my $self         = shift;
+    my $context      = shift;
+    my $xpc          = shift;
+    my $keyname      = shift;
+
+    my $node = $xpc->findnodes('//xenc:EncryptedKey/dsig:KeyInfo/dsig:KeyName', $context);
+
+    $node->[0]->removeChildNodes();
+    $node->[0]->appendText(defined $keyname ? $keyname : 'key_name');
+    return $context;
 }
 
 sub _setOAEPparams {
@@ -574,6 +638,36 @@ sub _getOAEPAlgorithm {
     };
 
     return $OAEPAlgorithm->{$method} // 'SHA1';
+}
+
+sub _setOAEPDigest {
+    my $self    = shift;
+    my $method  = shift;
+
+    state $OAEPDigest = {
+        'sha1'      => 'http://www.w3.org/2000/09/xmldsig#sha1',
+        'sha224'    => 'http://www.w3.org/2001/04/xmldsig-more#sha224',
+        'sha256'    => 'http://www.w3.org/2001/04/xmlenc#sha256',
+        'sha384'    => 'http://www.w3.org/2001/04/xmldsig-more#sha384',
+        'sha512'    => 'http://www.w3.org/2001/04/xmlenc#sha512',
+    };
+
+    return $OAEPDigest->{$method} // $OAEPDigest->{'sha256'};
+}
+
+sub _getParamsAlgorithm {
+    my $self    = shift;
+    my $method  = shift;
+
+    state $ParamsAlgorithm = {
+        'http://www.w3.org/2000/09/xmldsig#sha1' => 'SHA1',
+        'http://www.w3.org/2001/04/xmldsig-more#sha224' => 'SHA224',
+        'http://www.w3.org/2001/04/xmlenc#sha256' => 'SHA256',
+        'http://www.w3.org/2001/04/xmldsig-more#sha384' => 'SHA384',
+        'http://www.w3.org/2001/04/xmlenc#sha512' => 'SHA512',
+    };
+
+    return $ParamsAlgorithm->{$method} // $ParamsAlgorithm->{'http://www.w3.org/2000/09/xmldsig#sha1'};
 }
 
 sub _setKeyEncryptionMethod {
@@ -681,11 +775,24 @@ sub _decrypt_key {
     if ($algo eq 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p') {
         return _decrypt(
             sub {
-                $self->{key_obj}->decrypt(
-                    $key, 'oaep',
-                    $digest_name // 'SHA1',
-                    $oaep  // ''
-                );
+                if ($CryptX::VERSION le 0.081) {
+                    #print "Caller: _decrypt_key  rsa-oaep-mgf1p\n";
+                    $self->{key_obj}->decrypt(
+                        $key, 'oaep',
+                        #$self->_getOAEPAlgorithm($mgf),
+                        $digest_name // 'SHA1',
+                        $oaep // '',
+                    );
+                } else {
+                    #print "Caller: _decrypt_key  rsa-oaep-mgf1p\n";
+                    #print "digest_name: ", $digest_name, "\n";
+                    $self->{key_obj}->decrypt(
+                        $key, 'oaep',
+                        $mgf // 'SHA1',
+                        $oaep // '',
+                        $digest_name // 'SHA1',
+                    );
+                }
             }
         );
     }
@@ -693,11 +800,20 @@ sub _decrypt_key {
     if ($algo eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
         return _decrypt(
             sub {
-                $self->{key_obj}->decrypt(
-                    $key, 'oaep',
-                    $self->_getOAEPAlgorithm($mgf),
-                    $oaep // '',
-                );
+                if ($CryptX::VERSION le 0.081) {
+                    $self->{key_obj}->decrypt(
+                        $key, 'oaep',
+                        $self->_getOAEPAlgorithm($mgf),
+                        $oaep // '',
+                    );
+                } else {
+                    $self->{key_obj}->decrypt(
+                        $key, 'oaep',
+                        $self->_getOAEPAlgorithm($mgf),
+                        $oaep // '',
+                        $digest_name // '',
+                    );
+                }
             }
         );
     }
@@ -712,14 +828,29 @@ sub _EncryptKey {
 
     my $rsa_pub = $self->{cert_obj};
 
+    # FIXME: this could use some refactoring and some simplfication
     if ($keymethod eq 'http://www.w3.org/2001/04/xmlenc#rsa-1_5') {
         ${$key} = $rsa_pub->encrypt(${$key}, 'v1.5');
     }
     elsif ($keymethod eq 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p') {
-        ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', 'SHA1', $self->{oaep_params});
+        if ($CryptX::VERSION le 0.081) {
+            ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', 'SHA1', $self->{oaep_params});
+        } else {
+            my $oaep_label_hash = (defined $self->{oaep_label_hash} && $self->{oaep_label_hash} ne '') ?
+                            $self->_getParamsAlgorithm($self->{oaep_label_hash}) : 'SHA1';
+            ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', 'SHA1', $self->{oaep_params}, $oaep_label_hash);
+        }
     }
     elsif ($keymethod eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
-        ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', $self->_getOAEPAlgorithm($self->{oaep_mgf_alg}), $self->{oaep_params});
+        my $mgf_hash    = defined $self->{oaep_mgf_alg} ?
+                            $self->_getOAEPAlgorithm($self->{oaep_mgf_alg}) : undef;
+        if ($CryptX::VERSION le 0.081) {
+            ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', $mgf_hash, $self->{oaep_params});
+        } else {
+            my $oaep_label_hash = (defined $self->{oaep_label_hash} && $self->{oaep_label_hash} ne '') ?
+                            $self->_getParamsAlgorithm($self->{oaep_label_hash}) : $mgf_hash;
+            ${$key} = $rsa_pub->encrypt(${$key}, 'oaep', $mgf_hash, $self->{oaep_params}, $oaep_label_hash);
+        }
     } else {
         die "Unsupported algorithm for key encyption $keymethod}";
     }
@@ -1030,6 +1161,20 @@ sub _create_encrypted_data_xml {
                             }
                         );
 
+    if ($self->{key_transport} eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep' ||
+        $self->{key_transport} eq 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p' &&
+        $self->{oaep_label_hash}) {
+        my $digestmethod = $self->_create_node(
+                            $doc,
+                            $dsigns,
+                            $kencmethod,
+                            'dsig:DigestMethod',
+                            {
+                                Algorithm => $self->{oaep_label_hash},
+                            }
+                        );
+    };
+
     if ($self->{'oaep_params'} ne '') {
         my $oaep_params = $self->_create_node(
                             $doc,
@@ -1039,7 +1184,8 @@ sub _create_encrypted_data_xml {
                         );
     };
 
-    if ($self->{key_transport} eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep') {
+    if ($self->{key_transport} eq 'http://www.w3.org/2009/xmlenc11#rsa-oaep' &&
+        $self->{oaep_mgf_alg}) {
         my $oaepmethod = $self->_create_node(
                             $doc,
                             $xenc11ns,
@@ -1058,12 +1204,14 @@ sub _create_encrypted_data_xml {
                             'dsig:KeyInfo',
                         );
 
-    my $keyname = $self->_create_node(
+    if (defined $self->{key_name}) {
+        my $keyname = $self->_create_node(
                             $doc,
                             $dsigns,
                             $keyinfo2,
                             'dsig:KeyName',
                         );
+    };
 
     my $keycipherdata = $self->_create_node(
                             $doc,
