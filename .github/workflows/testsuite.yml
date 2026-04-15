@@ -205,7 +205,7 @@ jobs:
 
       - name: Install Perl dependencies (only on cache miss)
         if: ${{ steps.cache-perl.outputs.cache-hit != 'true' }}
-        run: cpanm --local-lib=local --notest Devel::CheckLib Alien::Sodium File::Slurper
+        run: cpanm --local-lib=local --installdeps .
 
       - run: perl Makefile.PL
       - run: make && ( make test || prove -wbvm t/*.t )
