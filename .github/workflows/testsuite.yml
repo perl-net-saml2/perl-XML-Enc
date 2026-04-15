@@ -135,6 +135,11 @@ jobs:
 
       - run: perl -V
 
+      - name: Install dependencies using apt-get
+        run: |
+          apt-get update
+          apt-get install -y perl make gcc libxml2 libxml2-dev openssl libssl-dev sudo curl
+
       - name: Install Perl dependencies (only on cache miss)
         if: ${{ steps.cache-perl.outputs.cache-hit != 'true' }}
         run: |
