@@ -302,7 +302,12 @@ sub decrypt {
 
     local $XML::LibXML::skipXMLDeclaration = $self->{ no_xml_declaration };
 
-    my $doc = XML::LibXML->load_xml( string => $xml );
+    my $doc = XML::LibXML->load_xml(
+                                    string => $xml,
+                                    no_network      => 1,
+                                    load_ext_dtd    => 0,
+                                    expand_entities => 0
+                                );
 
     my $xpc = XML::LibXML::XPathContext->new($doc);
     $xpc->registerNs('dsig', 'http://www.w3.org/2000/09/xmldsig#');
@@ -314,7 +319,11 @@ sub decrypt {
 
     die "You cannot decrypt XML without a private key." unless $self->{key_obj};
 
-    my $parser = XML::LibXML->new();
+    my $parser = XML::LibXML->new(
+                                    no_network      => 1,
+                                    load_ext_dtd    => 0,
+                                    expand_entities => 0
+                                );
     $self->_decrypt_encrypted_key_nodes($xpc, $parser, %options);
     $self->_decrypt_uri_nodes($xpc, $parser, %options);
 
@@ -526,7 +535,12 @@ sub encrypt {
     # Create the EncryptedData node
     my ($encrypted) = $self->_create_encrypted_data_xml();
 
-    my $dom = XML::LibXML->load_xml( string => $xml);
+    my $dom = XML::LibXML->load_xml(
+                                    string => $xml,
+                                    no_network      => 1,
+                                    load_ext_dtd    => 0,
+                                    expand_entities => 0
+                                );
 
     my $xpc = XML::LibXML::XPathContext->new($encrypted);
     $xpc->registerNs('dsig', 'http://www.w3.org/2000/09/xmldsig#');

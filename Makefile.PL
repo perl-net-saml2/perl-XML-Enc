@@ -7,7 +7,7 @@ use ExtUtils::MakeMaker;
 
 my %WriteMakefileArgs = (
   "ABSTRACT" => "A toolkit to help encrypt and decrypt XML Digital Signatures.",
-  "AUTHOR" => "Timothy Legge <timlegge\@cpan.org>",
+  "AUTHOR" => "Timothy Legge <timlegge\@gmail.com>",
   "CONFIGURE_REQUIRES" => {
     "ExtUtils::MakeMaker" => 0
   },
@@ -41,7 +41,7 @@ my %WriteMakefileArgs = (
     "XML::LibXML::XPathContext" => 0,
     "namespace::autoclean" => 0
   },
-  "VERSION" => "0.15",
+  "VERSION" => "0.16",
   "test" => {
     "TESTS" => "t/*.t"
   }
