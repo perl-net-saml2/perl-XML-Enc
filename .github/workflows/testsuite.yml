@@ -140,6 +140,11 @@ jobs:
           apt-get update
           apt-get install -y perl make gcc libxml2 libxml2-dev openssl libssl-dev sudo curl
 
+      - name: uses install-with-cpm
+        uses: perl-actions/install-with-cpm@v1
+        with:
+          cpanfile: "cpanfile"
+
       - name: Install Perl dependencies (only on cache miss)
         if: ${{ steps.cache-perl.outputs.cache-hit != 'true' }}
         run: |
