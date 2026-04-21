@@ -123,7 +123,7 @@ jobs:
 
       - name: Restore CPAN cache
         id: cache-perl
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cpanm
@@ -191,7 +191,7 @@ jobs:
 
       - name: Restore CPAN cache
         id: cache-perl
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cpanm
